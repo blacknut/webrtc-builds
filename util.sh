@@ -412,7 +412,7 @@ function compile() {
   # Set default default common  and target args.
   # `rtc_include_tests=false`: Disable all unit tests
   # `treat_warnings_as_errors=false`: Don't error out on compiler warnings
-  local common_args="rtc_include_tests=false treat_warnings_as_errors=false"
+  local common_args="rtc_include_tests=false treat_warnings_as_errors=false rtc_use_h264=true"
   local target_args="target_os=\"$target_os\" target_cpu=\"$target_cpu\""
 
   # Build WebRTC with RTII enbled.
