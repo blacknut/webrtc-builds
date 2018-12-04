@@ -89,6 +89,7 @@ check::build::env $PLATFORM "$TARGET_CPU"
 echo Checking depot-tools
 check::depot-tools $PLATFORM $DEPOT_TOOLS_URL $DEPOT_TOOLS_DIR
 
+REVISION=$(cat webrtc.revision)
 if [ ! -z $BRANCH ]; then
   REVISION=$(git ls-remote $REPO_URL --heads $BRANCH | head --lines 1 | cut --fields 1) || \
     { echo "Cound not get branch revision" && exit 1; }
