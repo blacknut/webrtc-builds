@@ -56,6 +56,7 @@ ENABLE_RTTI=${ENABLE_RTTI:-1}
 ENABLE_ITERATOR_DEBUGGING=0
 ENABLE_CLANG=0
 ENABLE_STATIC_LIBS=1
+ENABLE_CHECKS=${ENABLE_CHECKS:-0}
 BUILD_ONLY=${BUILD_ONLY:-0}
 DEBUG=${DEBUG:-0}
 CONFIGS=${CONFIGS:-Debug Release}
@@ -82,9 +83,12 @@ TARGET_CPU=${TARGET_CPU:-x64}
 echo "Host OS: $PLATFORM"
 echo "Target OS: $TARGET_OS"
 echo "Target CPU: $TARGET_CPU"
+echo "Check deps: $ENABLE_CHECKS"
 
+if [ $ENABLE_CHECKS -ne 0 ]; then
 echo Checking build environment dependencies
 check::build::env $PLATFORM "$TARGET_CPU"
+fi
 
 echo Checking depot-tools
 check::depot-tools $PLATFORM $DEPOT_TOOLS_URL $DEPOT_TOOLS_DIR
@@ -123,8 +127,10 @@ if [ $BUILD_ONLY = 0 ]; then
   echo "Checking out WebRTC revision (this will take a while): $REVISION"
   checkout "$TARGET_OS" $OUTDIR $REVISION
 
+  if [ $ENABLE_CHECKS -ne 0 ]; then
   echo Checking WebRTC dependencies
   check::webrtc::deps $PLATFORM $OUTDIR "$TARGET_OS"
+  fi
 
   echo Patching WebRTC source
   patch $PLATFORM $OUTDIR $ENABLE_RTTI
