@@ -488,7 +488,6 @@ function package::prepare() {
   fi
 
   pushd $outdir >/dev/null
-
     # Create directory structure
     mkdir -p $package_filename/include packages
     pushd src >/dev/null
@@ -515,22 +514,42 @@ function package::prepare() {
     popd >/dev/null
 
     # Find and copy libraries
-    for cfg in $configs; do
-      mkdir -p $package_filename/lib/$TARGET_CPU/$cfg
+    if [ $platform = 'win' ]; then
+      if [ $TARGET_CPU = 'x64' ]; then
+        ARCHIVE_CPU="x86_64-win-vc"
+      else
+        ARCHIVE_CPU="i686-win-vc"
+      fi
+      echo $ARCHIVE_CPU
+      mkdir -p $package_filename/lib/$ARCHIVE_CPU
       pushd src/out/$TARGET_CPU/$cfg >/dev/null
-        mkdir -p $outdir/$package_filename/lib/$TARGET_CPU/$cfg
-        if [ $COMBINE_LIBRARIES = 1 ]; then
-          find . -name '*.so' -o -name '*.dll' -o -name '*.lib' -o -name '*.a' -o -name '*.jar' | \
-            grep -E 'webrtc_full' | \
-            xargs -I '{}' $CP '{}' $outdir/$package_filename/lib/$TARGET_CPU/$cfg
-        else
-          find . -name '*.so' -o -name '*.dll' -o -name '*.lib' -o -name '*.a' -o -name '*.jar' | \
-            grep -E 'webrtc\.|boringssl|protobuf|system_wrappers' | \
-            xargs -I '{}' $CP '{}' $outdir/$package_filename/lib/$TARGET_CPU/$cfg
-        fi
+        find . -name '*.lib' | \
+          grep -E 'webrtc\.|boringssl\.dll\.|protobuf_lite\.dll\.|ffmpeg\.dll\.' | \
+          xargs -I '{}' $CP '{}' $outdir/$package_filename/lib/$ARCHIVE_CPU
       popd >/dev/null
-    done
-
+      mkdir -p $package_filename/bin
+      pushd src/out/$TARGET_CPU/$cfg >/dev/null
+      find . -name '*.dll' | \
+        grep -E 'boringssl\.|protobuf_lite\.|ffmpeg\.' | \
+        xargs -I '{}' $CP '{}' $outdir/$package_filename/bin/
+      popd >/dev/null
+    else
+      for cfg in $configs; do
+        mkdir -p $package_filename/lib/$TARGET_CPU/$cfg
+        pushd src/out/$TARGET_CPU/$cfg >/dev/null
+          mkdir -p $outdir/$package_filename/lib/$TARGET_CPU/$cfg
+          if [ $COMBINE_LIBRARIES = 1 ]; then
+            find . -name '*.so' -o -name '*.dll' -o -name '*.lib' -o -name '*.a' -o -name '*.jar' | \
+              grep -E 'webrtc_full' | \
+              xargs -I '{}' $CP '{}' $outdir/$package_filename/lib/$TARGET_CPU/$cfg
+          else
+            find . -name '*.so' -o -name '*.dll' -o -name '*.lib' -o -name '*.a' -o -name '*.jar' | \
+              grep -E 'webrtc\.|boringssl|protobuf|system_wrappers' | \
+              xargs -I '{}' $CP '{}' $outdir/$package_filename/lib/$TARGET_CPU/$cfg
+          fi
+        popd >/dev/null
+      done
+    fi
     # Create pkgconfig files on linux
     if [ $platform = 'linux' ]; then
       for cfg in $configs; do
