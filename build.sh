@@ -62,7 +62,7 @@ CONFIGS=${CONFIGS:-Debug Release}
 COMBINE_LIBRARIES=${COMBINE_LIBRARIES:-1}
 PACKAGE_AS_DEBIAN=${PACKAGE_AS_DEBIAN:-0}
 PACKAGE_NAME_PATTERN=${PACKAGE_NAME_PATTERN:-"webrtc"}
-PACKAGE_FILENAME_PATTERN=${PACKAGE_FILENAME_PATTERN:-"${PACKAGE_NAME_PATTERN}-%rn%-%sr%-%to%-%tc%"}
+PACKAGE_FILENAME_PATTERN=${PACKAGE_FILENAME_PATTERN:-"${PACKAGE_NAME_PATTERN}-%rn%-%sr%-%to%-%tc%-%br%"}
 PACKAGE_VERSION_PATTERN=${PACKAGE_VERSION_PATTERN:-"%rn%"}
 REPO_URL="https://chromium.googlesource.com/external/webrtc"
 DEPOT_TOOLS_URL="https://chromium.googlesource.com/chromium/tools/depot_tools.git"
@@ -90,6 +90,15 @@ echo Checking depot-tools
 check::depot-tools $PLATFORM $DEPOT_TOOLS_URL $DEPOT_TOOLS_DIR
 
 REVISION=$(cat webrtc.revision)
+BUILDS_REVISION_SHA=$(git rev-list --tags --max-count=1 2> /dev/null) || { echo "Failed to run git rev-list --tags"; }
+
+if [ -z $BUILDS_REVISION_SHA ]; then
+  BUILDS_REVISION="dev"
+else
+  BUILDS_REVISION=$(git describe --tags $BUILDS_REVISION_SHA)
+fi
+echo "Toolchain revision: $BUILDS_REVISION"
+
 if [ ! -z $BRANCH ]; then
   REVISION=$(git ls-remote $REPO_URL --heads $BRANCH | head --lines 1 | cut --fields 1) || \
     { echo "Cound not get branch revision" && exit 1; }
@@ -118,11 +127,12 @@ echo Compiling WebRTC
 compile $PLATFORM $OUTDIR "$TARGET_OS" "$TARGET_CPU" "$CONFIGS" "$BLACKLIST"
 
 # Default PACKAGE_FILENAME is <projectname>-<rev-number>-<short-rev-sha>-<target-os>-<target-cpu>
-PACKAGE_FILENAME=$(interpret-pattern "$PACKAGE_FILENAME_PATTERN" "$PLATFORM" "$OUTDIR" "$TARGET_OS" "$TARGET_CPU" "$BRANCH" "$REVISION" "$REVISION_NUMBER")
-PACKAGE_NAME=$(interpret-pattern "$PACKAGE_NAME_PATTERN" "$PLATFORM" "$OUTDIR" "$TARGET_OS" "$TARGET_CPU" "$BRANCH" "$REVISION" "$REVISION_NUMBER")
-PACKAGE_VERSION=$(interpret-pattern "$PACKAGE_VERSION_PATTERN" "$PLATFORM" "$OUTDIR" "$TARGET_OS" "$TARGET_CPU" "$BRANCH" "$REVISION" "$REVISION_NUMBER")
+PACKAGE_FILENAME=$(interpret-pattern "$PACKAGE_FILENAME_PATTERN" "$PLATFORM" "$OUTDIR" "$TARGET_OS" "$TARGET_CPU" "$BRANCH" "$REVISION" "$REVISION_NUMBER" "$BUILDS_REVISION")
+PACKAGE_NAME=$(interpret-pattern "$PACKAGE_NAME_PATTERN" "$PLATFORM" "$OUTDIR" "$TARGET_OS" "$TARGET_CPU" "$BRANCH" "$REVISION" "$REVISION_NUMBER" "$BUILDS_REVISION")
+PACKAGE_VERSION=$(interpret-pattern "$PACKAGE_VERSION_PATTERN" "$PLATFORM" "$OUTDIR" "$TARGET_OS" "$TARGET_CPU" "$BRANCH" "$REVISION" "$REVISION_NUMBER" "$BUILDS_REVISION")
 
 echo "Packaging WebRTC: $PACKAGE_FILENAME"
+
 package::prepare $PLATFORM $OUTDIR $PACKAGE_FILENAME $DIR/resource "$CONFIGS" $REVISION_NUMBER
 if [ "$PACKAGE_AS_DEBIAN" = 1 ]; then
   package::debian $OUTDIR $PACKAGE_FILENAME $PACKAGE_NAME $PACKAGE_VERSION "$(debian-arch $TARGET_CPU)"

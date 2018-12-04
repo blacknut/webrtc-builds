@@ -520,7 +520,6 @@ function package::prepare() {
       else
         ARCHIVE_CPU="i686-win-vc"
       fi
-      echo $ARCHIVE_CPU
       mkdir -p $package_filename/lib/$ARCHIVE_CPU
       pushd src/out/$TARGET_CPU/$cfg >/dev/null
         find . -name '*.lib' | \
@@ -583,7 +582,12 @@ function package::archive() {
     rm -f $OUTFILE
     pushd $package_filename >/dev/null
       if [ $platform = 'win' ]; then
-        $TOOLS_DIR/win/7z/7z.exe a -t7z -m0=lzma2 -mx=9 -mfb=64 -md=32m -ms=on -ir!lib/$TARGET_CPU -ir!include -r ../packages/$OUTFILE
+        if [ $TARGET_CPU = 'x64' ]; then
+          ARCHIVE_CPU="x86_64-win-vc"
+        else
+          ARCHIVE_CPU="i686-win-vc"
+        fi
+        $TOOLS_DIR/win/7z/7z.exe a -t7z -m0=lzma2 -mx=9 -mfb=64 -md=32m -ms=on -ir!lib/$ARCHIVE_CPU -ir!bin -ir!include -r ../packages/$OUTFILE
       else
         tar -czvf ../packages/$OUTFILE lib/$TARGET_CPU include
         # tar cvf - lib/$TARGET_CPU include | gzip --best > ../packages/$OUTFILE
@@ -703,6 +707,7 @@ function interpret-pattern() {
   local branch="$6"
   local revision="$7"
   local revision_number="$8"
+  local build_revision="$9"
   local debian_arch="$(debian-arch $target_cpu)"
   local short_revision="$(short-rev $revision)"
 
@@ -714,6 +719,7 @@ function interpret-pattern() {
   pattern=${pattern//%rn%/$revision_number}
   pattern=${pattern//%da%/$debian_arch}
   pattern=${pattern//%sr%/$short_revision}
+  pattern=${pattern//%br%/$build_revision}
 
   echo "$pattern"
 }
