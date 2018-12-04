@@ -256,6 +256,10 @@ function patch() {
     #   sed -i.bak 's|"//build/config/compiler:no_rtti",|#"//build/config/compiler:no_rtti",|' \
     #     build/config/BUILDCONFIG.gn
     # fi
+    if [ $platform = 'win' ]; then
+      git apply ../../patches/webrtc-src.webrtc_gni.component_build.patch
+    fi
+    git apply ../../patches/webrtc-src.audio_encoder_opus.enable_stereo.patch
   popd >/dev/null
 }
 
@@ -420,7 +424,11 @@ function compile() {
 
   # Static vs Dynamic CRT: When `is_component_build` is false static CTR will be
   # enforced.By default Debug builds are dynamic and Release builds are static.
-  [ $ENABLE_STATIC_LIBS = 1 ] && common_args+=" is_component_build=false"
+  if [ $platform = 'win' ]; then
+    [ $ENABLE_STATIC_LIBS = 1 ] && common_args+=" is_component_build=true"
+  else
+    [ $ENABLE_STATIC_LIBS = 1 ] && common_args+=" is_component_build=false"
+  fi
 
   # `enable_iterator_debugging=false`: Disable libstdc++ debugging facilities
   # unless all your compiled applications and dependencies define _GLIBCXX_DEBUG=1.

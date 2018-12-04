@@ -1,0 +1,43 @@
+diff --git a/modules/audio_coding/codecs/opus/audio_encoder_opus.cc b/modules/audio_coding/codecs/opus/audio_encoder_opus.cc
+index e6240e6982..2eaa0ec6ac 100644
+--- a/modules/audio_coding/codecs/opus/audio_encoder_opus.cc
++++ b/modules/audio_coding/codecs/opus/audio_encoder_opus.cc
+@@ -282,12 +282,12 @@ absl::optional<AudioEncoderOpusConfig> AudioEncoderOpusImpl::SdpToConfig(
+   }
+ 
+   AudioEncoderOpusConfig config;
+-  config.num_channels = GetChannelCount(format);
++  config.num_channels = 2; //GetChannelCount(format);
+   config.frame_size_ms = GetFrameSizeMs(format);
+   config.max_playback_rate_hz = GetMaxPlaybackRate(format);
+   config.fec_enabled = (GetFormatParameter(format, "useinbandfec") == "1");
+-  config.dtx_enabled = (GetFormatParameter(format, "usedtx") == "1");
+-  config.cbr_enabled = (GetFormatParameter(format, "cbr") == "1");
++  config.dtx_enabled = 0; //(GetFormatParameter(format, "usedtx") == "1");
++  config.cbr_enabled = 1; //(GetFormatParameter(format, "cbr") == "1");
+   config.bitrate_bps =
+       CalculateBitrate(config.max_playback_rate_hz, config.num_channels,
+                        GetFormatParameter(format, "maxaveragebitrate"));
+@@ -295,6 +295,12 @@ absl::optional<AudioEncoderOpusConfig> AudioEncoderOpusImpl::SdpToConfig(
+                            ? AudioEncoderOpusConfig::ApplicationMode::kVoip
+                            : AudioEncoderOpusConfig::ApplicationMode::kAudio;
+ 
++  RTC_LOG(INFO) << "Channels: " << config.num_channels;
++  RTC_LOG(INFO) << "FEC: " << config.fec_enabled;
++  RTC_LOG(INFO) << "DTX: " << config.dtx_enabled;
++  RTC_LOG(INFO) << "CBR: " << config.cbr_enabled;
++  RTC_LOG(INFO) << "Application: " << (int)config.application;
++
+   constexpr int kMinANAFrameLength = kANASupportedFrameLengths[0];
+   constexpr int kMaxANAFrameLength =
+       kANASupportedFrameLengths[arraysize(kANASupportedFrameLengths) - 1];
+@@ -627,6 +633,9 @@ AudioEncoder::EncodedInfo AudioEncoderOpusImpl::EncodeImpl(
+   input_buffer_.clear();
+ 
+   bool dtx_frame = (info.encoded_bytes <= 2);
++  if (dtx_frame) {
++    RTC_LOG(WARNING) << "DTX detected";
++  }
+ 
+   // Will use new packet size for next encoding.
+   config_.frame_size_ms = next_frame_length_ms_;

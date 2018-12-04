@@ -1,0 +1,13 @@
+diff --git a/webrtc.gni b/webrtc.gni
+index eeb25c0edb..d4740217ed 100644
+--- a/webrtc.gni
++++ b/webrtc.gni
+@@ -23,7 +23,7 @@ if (!build_with_chromium && is_component_build) {
+         "`is_component_build=true` and `is_component_build=false`.")
+   print(
+       "More info about component builds at: " + "https://chromium.googlesource.com/chromium/src/+/master/docs/component_build.md")
+-  assert(!is_component_build, "Component builds are not supported in WebRTC.")
++  #assert(!is_component_build, "Component builds are not supported in WebRTC.")
+ }
+ 
+ if (is_ios) {
