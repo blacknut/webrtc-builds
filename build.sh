@@ -89,16 +89,23 @@ check::build::env $PLATFORM "$TARGET_CPU"
 echo Checking depot-tools
 check::depot-tools $PLATFORM $DEPOT_TOOLS_URL $DEPOT_TOOLS_DIR
 
+# read the webrtc revision to retrieve from the server
 REVISION=$(cat webrtc.revision)
+# read the branch and tags from the current repo
+BUILDS_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+if [ $BUILDS_BRANCH = 'master' ]; then
 BUILDS_REVISION_SHA=$(git rev-list --tags --max-count=1 2> /dev/null) || { echo "Failed to run git rev-list --tags"; }
-
 if [ -z $BUILDS_REVISION_SHA ]; then
   BUILDS_REVISION="dev"
 else
   BUILDS_REVISION=$(git describe --tags $BUILDS_REVISION_SHA)
 fi
+else
+  BUILDS_REVISION="dev"
+fi
 echo "Toolchain revision: $BUILDS_REVISION"
 
+# read the revision from the webrtc repo
 if [ ! -z $BRANCH ]; then
   REVISION=$(git ls-remote $REPO_URL --heads $BRANCH | head --lines 1 | cut --fields 1) || \
     { echo "Cound not get branch revision" && exit 1; }
