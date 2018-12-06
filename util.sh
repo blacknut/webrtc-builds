@@ -489,7 +489,12 @@ function package::prepare() {
 
   pushd $outdir >/dev/null
     # Create directory structure
-    mkdir -p $package_filename/include packages
+    if [ $platform = 'win' ]; then
+      INCLUDE_PATCH=$package_filename/include/webrtc
+    else
+      INCLUDE_PATCH=$package_filename/include
+    fi
+    mkdir -p $INCLUDE_PATCH packages
     pushd src >/dev/null
 
       # Find and copy header files
@@ -501,7 +506,7 @@ function package::prepare() {
 
       # Copy header files, skip third_party dir
       find $header_source_dir -path './third_party' -prune -o -type f \( -name '*.h' \) -print | \
-        xargs -I '{}' $CP --parents '{}' $outdir/$package_filename/include
+        xargs -I '{}' $CP --parents '{}' $outdir/$INCLUDE_PATCH
         
       # Find and copy dependencies
       # The following build dependencies were excluded: 
@@ -509,7 +514,7 @@ function package::prepare() {
       find $header_source_dir -name '*.h' -o -name README -o -name LICENSE -o -name COPYING | \
         grep './third_party' | \
         grep -E 'abseil-cpp|boringssl|expat/files|jsoncpp/source/json|libjpeg|libjpeg_turbo|libsrtp|libyuv|libvpx|opus|protobuf|usrsctp/usrsctpout/usrsctpout' | \
-        xargs -I '{}' $CP --parents '{}' $outdir/$package_filename/include
+        xargs -I '{}' $CP --parents '{}' $outdir/$INCLUDE_PATCH
 
     popd >/dev/null
 
@@ -522,9 +527,15 @@ function package::prepare() {
       fi
       mkdir -p $package_filename/lib/$ARCHIVE_CPU
       pushd src/out/$TARGET_CPU/$cfg >/dev/null
-        find . -name '*.lib' | \
-          grep -E 'webrtc\.|boringssl\.dll\.|protobuf_lite\.dll\.|ffmpeg\.dll\.' | \
-          xargs -I '{}' $CP '{}' $outdir/$package_filename/lib/$ARCHIVE_CPU
+        if [ $COMBINE_LIBRARIES = 1 ]; then
+          find . -name '*.lib' | \
+            grep -E 'webrtc_full|ffmpeg\.dll\.' | \
+            xargs -I '{}' $CP '{}' $outdir/$package_filename/lib/$ARCHIVE_CPU
+        else
+          find . -name '*.lib' | \
+            grep -E 'webrtc\.|boringssl\.dll\.|protobuf_lite\.dll\.|ffmpeg\.dll\.' | \
+            xargs -I '{}' $CP '{}' $outdir/$package_filename/lib/$ARCHIVE_CPU
+        fi
       popd >/dev/null
       mkdir -p $package_filename/bin
       pushd src/out/$TARGET_CPU/$cfg >/dev/null
