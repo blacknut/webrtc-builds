@@ -1,4 +1,4 @@
-rem @echo off
+@echo off
 setlocal
 
 set root_dir=%CD%
