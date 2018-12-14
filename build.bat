@@ -2,7 +2,7 @@
 setlocal
 
 set root_dir=%CD%
-call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" x86_amd64
+call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" x64
 
 set GIT_PATH="C:\Program Files\Git\usr\bin\"
 set DEPOT_TOOLS_WIN_TOOLCHAIN=0
@@ -59,17 +59,25 @@ pushd %out_dir%\src
 popd
 
 echo Compiling WebRTC source
-set common_args=rtc_include_tests=false treat_warnings_as_errors=false rtc_use_h264=true
+set common_args=rtc_include_tests=false treat_warnings_as_errors=false rtc_use_h264=true use_rtti=true is_component_build=true enable_iterator_debugging=false is_clang=false is_debug=false strip_debug_info=true symbol_level=0
 set target_args=target_os=\"win\" target_cpu=\"x64\"
 
+rem set common_args=rtc_include_tests=false treat_warnings_as_errors=false rtc_use_h264=true
+
 rem [ $ENABLE_RTTI = 1 ] && common_args+=" use_rtti=true"
-set common_args=%common_args% use_rtti=true
+rem set common_args=%common_args% use_rtti=true
 
 rem [ $ENABLE_STATIC_LIBS = 1 ] && common_args+=" is_component_build=true"
-set common_args=%common_args% is_component_build=true
+rem set rommon_args=%common_args% is_component_build=true
+
+rem [ $ENABLE_ITERATOR_DEBUGGING = 0 ] && common_args+=" enable_iterator_debugging=false"
+rem set common_args=%common_args% enable_iterator_debugging=false
+
+rem if [ $ENABLE_CLANG = 0 ]; then common_args+=" is_clang=false"
+rem set common_args=%common_args% is_clang=false
 
 rem [ "$cfg" = 'Release' ] && common_args+=' is_debug=false strip_debug_info=true symbol_level=0'
-set common_args=%common_args% is_debug=false strip_debug_info=true symbol_level=0
+rem set common_args=%common_args% is_debug=false strip_debug_info=true symbol_level=0
 
 set outputdir=out\x64\Release
 
