@@ -117,10 +117,10 @@ pushd %out_dir%
     popd
 
     set outfile=%package_filename%.7z
-    del /Q /F %outfile% >nul
+    del /Q /F .\packages\%outfile% >nul 2>nul
     
     pushd %package_filename%
-        %root_dir%\tools\win\7z\7z.exe a -t7z -m0=lzma2 -mx=9 -mfb=64 -md=32m -ms=on -ir!lib\x86_64-win-vc -ir!bin -ir!include -r ..\packages\%outfile% >nul
+        %root_dir%\tools\win\7z\7z.exe a -t7z -m0=lzma2 -mx=9 -mfb=64 -md=32m -ms=on -ir!lib\x86_64-win-vc -ir!bin -ir!include -r ..\packages\%outfile%
     popd
 popd
 
