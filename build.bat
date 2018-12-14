@@ -1,4 +1,4 @@
-@echo off
+rem @echo off
 setlocal
 
 set root_dir=%CD%
@@ -15,7 +15,7 @@ echo Checking out depot_tools
 if exist "%depot_tools_dir%\" goto depot_exist
 git clone -q %depot_tools_url% %depot_tools_dir%
 pushd %depot_tools_dir%
-    cmd.exe /C "./gclient.bat"
+rem    cmd.exe /C "gclient.bat"
 popd
 
 goto after_depot
@@ -35,14 +35,13 @@ mkdir %out_dir%
 :out_exist
 set revision_number=0
 set /p revision=<webrtc.revision
-echo %revision%
 
 echo Checking out to revision %revision%
 
 pushd %out_dir%
 
     if exist %out_dir%\src\ goto fetched
-    fetch --nohooks webrtc
+    cmd.exe /C "fetch --nohooks webrtc"
 
     :fetched
     echo Cleaning WebRTC source
@@ -78,7 +77,7 @@ pushd %out_dir%\src
     echo Generating project files with: %target_args% %common_args%
     cmd.exe /C "gn gen %outputdir% --args="%target_args% %common_args%" "
     pushd %outputdir%
-        rem ninja -v -C  .
+        rem cmd.exe /C "ninja -v -C  ."
         cmd.exe /C "ninja -C  ."
     popd
 
