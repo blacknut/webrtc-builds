@@ -52,6 +52,9 @@ pushd %out_dir%
     cmd.exe /C "gclient sync --force --revision %revision%"
 popd
 
+echo Env Lib path
+echo %LIB%
+
 echo Patching WebRTC source
 pushd %out_dir%\src
     cmd.exe /C "git apply ../../patches/webrtc-src.webrtc_gni.component_build.patch"
