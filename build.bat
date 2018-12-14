@@ -2,7 +2,7 @@
 setlocal
 
 set root_dir=%CD%
-cmd.exe /C "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" x86_amd64
+call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" x86_amd64
 
 set GIT_PATH="C:\Program Files\Git\usr\bin\"
 set DEPOT_TOOLS_WIN_TOOLCHAIN=0
@@ -15,7 +15,7 @@ echo Checking out depot_tools
 if exist "%depot_tools_dir%\" goto depot_exist
 git clone -q %depot_tools_url% %depot_tools_dir%
 pushd %depot_tools_dir%
-rem    cmd.exe /C "gclient.bat"
+rem    call "gclient.bat"
 popd
 
 goto after_depot
