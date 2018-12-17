@@ -93,17 +93,21 @@ popd
 
 set package_filename=lakitu-%revision%-win-x64
 
-echo Packaging WebRTC : %package_filename%
-
 set include_path=%package_filename%\include\webrtc
 set librarie_path=%package_filename%\lib\x86_64-win-vc
 set binarie_path=%package_filename%\bin
+
+if not exist %include_path%\ mkdir %include_path% packages %librarie_path%
+
+call buildext.bat %package_filename%
+
+echo Packaging WebRTC : %package_filename%
+
 pushd %out_dir%
-    if not exist %include_path%\ mkdir %include_path% packages %librarie_path%
     
     pushd src
         set header_source_dir=.
-        
+        set idx=0
         for /R . %%i in (%header_source_dir%\*.h) do (
             cmd.exe /C "%root_dir%\copyfile.bat "%%i" "%out_dir%\src\" "%out_dir%\%include_path%\""
         )
@@ -119,6 +123,7 @@ pushd %out_dir%
     set outfile=%package_filename%.7z
     del /Q /F .\packages\%outfile% >nul 2>nul
     
+    echo Compressing WebRTC : %package_filename%
     pushd %package_filename%
         %root_dir%\tools\win\7z\7z.exe a -t7z -m0=lzma2 -mx=9 -mfb=64 -md=32m -ms=on -ir!lib\x86_64-win-vc -ir!bin -ir!include -r ..\packages\%outfile%
     popd

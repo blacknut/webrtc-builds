@@ -38,6 +38,7 @@ if x%testfile% NEQ x%destrelfile% goto copyfile
 goto exitscript
 
 :copyfile
+echo Copy %destfile%
 xcopy "%destfile%" "%output%\%destsubfile%*" /Y /A >nul
 
 :exitscript
